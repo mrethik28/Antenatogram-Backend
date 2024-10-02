@@ -41,8 +41,8 @@ async function initPatient() {
                 refreshtoken TEXT )
             `)
     }
-    catch {
-
+    catch(error) {
+        console.error(error);
     }
     finally{
        return connection.release();
