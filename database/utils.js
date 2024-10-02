@@ -1,0 +1,1 @@
+export const removeNewLines = (schema) => schema.replace(/\n/g, ' ');
