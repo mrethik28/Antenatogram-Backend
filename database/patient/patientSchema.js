@@ -13,5 +13,4 @@ pincode CHAR(6),
 aadharnumber CHAR(12),
 nomineename TINYTEXT,
 nomineephonenumber TINYINT(10),
-passwordhash VARCHAR(60) NOT NULL,
-refreshtoken TEXT`);
+passwordhash VARCHAR(60) NOT NULL`);

@@ -3,6 +3,7 @@ import { pool } from "./db.js";
 import { patientSchema } from "./patient/patientSchema.js";
 import { allergySchema, illnessSchema, medicalhistorySchema, medicationSchema } from "./medicalhistory/medicalhistorySchema.js";
 import { doctorSchema } from "./doctor/doctorSchema.js";
+import { patientrefreshtokenSchema, doctorrefreshtokenSchema } from "./refreshtoken/refreshtokenSchema.js";
 
 async function initDB() {
   const connection = await mysql.createConnection({
@@ -53,11 +54,26 @@ async function initDoctor(){
         await connection.query(`CREATE TABLE IF NOT EXISTS doctor(${doctorSchema});`);
     }
     catch(error){
-        console.error("Dcotor initialisation error: ", error);
+        console.error("Doctor initialisation error: ", error);
     }
     finally{
         connection.release();
     }
+}
+
+async function initRefreshToken() {
+  let connection;
+    try{
+         connection = await pool.getConnection();
+        await connection.query(`CREATE TABLE IF NOT EXISTS doctorrefreshtoken(${doctorrefreshtokenSchema});`);
+        await connection.query(`CREATE TABLE IF NOT EXISTS patientrefreshtoken(${patientrefreshtokenSchema});`);
+    }
+    catch(error){
+        console.error("refreshtoken initialisation error: ", error);
+    }
+    finally{
+        connection.release();
+    }    
 }
 
 export async function initRelations() {
@@ -65,4 +81,5 @@ export async function initRelations() {
   await initPatient();
   await initMedicalHistory();
   await initDoctor();
+  await initRefreshToken();
 }
