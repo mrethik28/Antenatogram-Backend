@@ -30,3 +30,18 @@ export async function generateRefreshToken(role, id) {
     return new AuthenticationError("Could not create refresh token", error);
   }
 }
+
+export async function verifyToken(token){
+  const secret = process.env.JWT_SECRET;
+  try{
+  const decoded = await jsonwebtoken.verify(token,secret);
+  return decoded;
+  }
+  catch(error){
+    if(error instanceof jsonwebtoken.TokenExpiredError) return "expired";
+    return new AuthenticationError("Could not verify token");
+  }
+
+
+
+}

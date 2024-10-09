@@ -2,8 +2,8 @@ import { AuthenticationError } from "../../utils/backendError.js";
 import { userExists } from "../../../database/services/userExists.js";
 import { addUser } from "../../../database/services/addUser.js";
 import bcrypt from "bcrypt";
-import { generateAccessToken, generateRefreshToken } from "../../utils/jwtUtils.js";
-import { addNewRefreshToken } from "../../../database/refreshtoken/refreshTokenServices.js";
+import { generateAccessToken, generateRefreshToken, verifyToken } from "../../utils/jwtUtils.js";
+import { addNewRefreshToken, findAndDelete } from "../../../database/refreshtoken/refreshTokenServices.js";
 
 async function signup(req, res, next) {
   const role = req.body.auth.role;
@@ -42,13 +42,41 @@ async function signin(req, res, next) {
     if(refreshtoken instanceof Error) return next(refreshtoken);
     const addingtoken = await addNewRefreshToken(refreshtoken,role,userexists[id]);
     if(addingtoken instanceof Error) return next(addingtoken);
-    if(addingtoken == true) return res.send({ message: "succesfully logged in", "accesstoken": accesstoken, "refreshtoken": refreshtoken });
+    if(addingtoken == true) {
+      res.cookie('refreshtoken', refreshtoken, {
+        httpOnly: true, 
+        // secure: true,   
+        sameSite: 'Strict', 
+        maxAge: 10 * 24 * 60 * 60 * 1000 
+      })
+      return res.send({ message: "succesfully logged in", "accesstoken": accesstoken, "refreshtoken": refreshtoken });
+    }
 
   } 
   return next(new AuthenticationError("invalid password"));
 }
 
-async function logout(req, res, next) {}
+async function logout(req, res, next) {
+  const refreshtoken = req.cookies.refreshtoken;
+  if(!refreshtoken) return next(new AuthenticationError("No refreshtoken found"));
+  const verify = await verifyToken(refreshtoken);
+  if(verify instanceof Error) return next(verify);
+  const role = verify.role;
+  const id = verify.sub;
+  const deleting = await findAndDelete(role,refreshtoken,id,1);
+  if(deleting instanceof Error) return next(deleting);
+  if(deleting){
+    res.clearCookie('refreshtoken', refreshtoken, {
+      httpOnly: true, 
+      // secure: true,   
+      sameSite: 'Strict'
+    })
+    return res.send({"message": "succesfully logged out"});
+  } 
+  return res.send({"message": "could not logout"});
+
+}
+
 async function refresh(req, res, next) {}
 
 export const AuthServices = { signup, signin, logout, refresh };

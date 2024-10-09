@@ -7,8 +7,8 @@ export async function userExists(userRole, email) {
          connection = await pool.getConnection();
          try{
             let query;
-            if(role ==="patient") query = `SELECT * FROM patient WHERE email=(?);`;
-            else if(role ==="doctor") query = `SELECT * FROM doctor WHERE email=(?);`;
+            if(role ==="patient") query = `SELECT BIN_TO_UUID(patient_id) AS patient_id, passwordhash FROM patient WHERE email=(?);`;
+            else if(role ==="doctor") query = `SELECT BIN_TO_UUID(doctor_id) AS doctor_id, passwordhash FROM doctor WHERE email=(?);`;
             else return new AuthenticationError("invalid role");
             const [rows] = await connection.query(query,[email]);
             if(rows.length > 0) return rows[0];
