@@ -1,5 +1,6 @@
 import { pool } from "../db.js";
-import { DBError } from "../../src/utils/backendError.js";
+import { AuthenticationError, DBError } from "../../src/utils/backendError.js";
+import { generateRefreshToken } from "../../src/utils/jwtUtils.js";
 
 export async function addNewRefreshToken(token, role, id) {
     let connection;
@@ -63,3 +64,28 @@ export async function findAndDelete(role, token, userid, del) {
 
     
 }
+
+export async function getNewRefreshToken(role,token,id) {
+    let connection;
+    try {
+      connection = await pool.getConnection();
+      let query;
+      if(role == "patient") query = "UPDATE patientrefreshtoken SET token = (?) WHERE patient_id = UUID_TO_BIN(?) and token = (?);"
+      else if(role == "doctor") query = "UPDATE doctorrefreshtoken SET token = (?) WHERE doctor_id = UUID_TO_BIN(?) and token = (?);"
+      else return new AuthenticationError("role not found");
+  
+      const newToken = await generateRefreshToken(role,id);
+      try{
+        const [results] = await connection.query(query,[newToken,id,token]);
+        if(results.affectedRows == 1) return newToken;
+        return false;
+      }catch(error){
+        return new DBError(error);
+      }
+      
+    } catch (error) {
+      return new DBError("could not connect to DB", error);
+    }finally{
+      connection.release();
+    }
+  }

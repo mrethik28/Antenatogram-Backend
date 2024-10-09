@@ -3,7 +3,7 @@ import { userExists } from "../../../database/services/userExists.js";
 import { addUser } from "../../../database/services/addUser.js";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken, verifyToken } from "../../utils/jwtUtils.js";
-import { addNewRefreshToken, findAndDelete } from "../../../database/refreshtoken/refreshTokenServices.js";
+import { addNewRefreshToken, findAndDelete, getNewRefreshToken } from "../../../database/refreshtoken/refreshTokenServices.js";
 
 async function signup(req, res, next) {
   const role = req.body.auth.role;
@@ -77,6 +77,20 @@ async function logout(req, res, next) {
 
 }
 
-async function refresh(req, res, next) {}
+async function refresh(req, res, next) {
+  const refreshtoken = req.cookies.refreshtoken;
+  if(!refreshtoken) return next(new AuthenticationError("No refreshtoken found"));
+  const verify = await verifyToken(refreshtoken);
+  if(verify instanceof Error) return next(verify);
+  const role = verify.role;
+  const id = verify.sub;
+
+  const find = await findAndDelete(role,refreshtoken,id,0);
+  if(find instanceof Error) return next(find);
+  if(find == "expired") getNewRefreshToken(role,refreshtoken,id);
+  const accesstoken = await generateAccessToken(role,id);
+  if(accesstoken instanceof Error) return next(accesstoken);
+  return res.send({"message": {"accesstoken" : accesstoken} });
+}
 
 export const AuthServices = { signup, signin, logout, refresh };

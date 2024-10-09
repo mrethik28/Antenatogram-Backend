@@ -1,5 +1,6 @@
 import jsonwebtoken from "jsonwebtoken";
-import { AuthenticationError } from "./backendError.js";
+import { AuthenticationError, DBError } from "./backendError.js";
+import { pool } from "../../database/db.js";
 
 export async function generateAccessToken(role, id) {
   const secret = process.env.JWT_SECRET;

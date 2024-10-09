@@ -9,7 +9,7 @@ export class AuthenticationError extends Error {
 
 export class DBError extends Error{
     err;
-    constructor(message, error=''){
+    constructor(message='', error=''){
         super(message);
         this.name = AuthenticationError;
         this.err = error;
