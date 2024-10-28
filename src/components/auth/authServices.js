@@ -3,12 +3,10 @@ import { userExists } from "../../../database/services/userExists.js";
 import { addUser } from "../../../database/services/addUser.js";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken, verifyToken } from "../../utils/jwtUtils.js";
-import { addNewRefreshToken, findAndDelete, getNewRefreshToken } from "../../../database/refreshtoken/refreshTokenServices.js";
+import { addNewRefreshToken, findAndDelete, getNewRefreshToken } from "../../../database/refreshtoken/refreshTokenMethods.js";
 
 async function signup(req, res, next) {
   const role = req.body.auth.role;
-  console.log(role);
-
   const userexists = await userExists(role, req.body.email);
   if (userexists instanceof Error) return next(userexists);
   else if (userexists)

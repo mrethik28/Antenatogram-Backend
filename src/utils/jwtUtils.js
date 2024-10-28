@@ -7,7 +7,7 @@ export async function generateAccessToken(role, id) {
   const payload = {
     sub: id,
     role: role,
-    exp: Math.floor(Date.now() / 1000) + 30 * 60, //30mins
+    exp: Math.floor(Date.now() / 1000) + 5, //5 seconds
   };
   try {
     const token = await jsonwebtoken.sign(payload, secret);
