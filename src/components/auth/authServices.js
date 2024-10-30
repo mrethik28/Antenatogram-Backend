@@ -54,7 +54,7 @@ async function signin(req, res, next) {
       role,
       userexists[id]
     );
-    const pregnancy_id = await getCurrentPregnancy(id);
+    const pregnancy_id = await getCurrentPregnancy(id) || "jello";
     if(pregnancy_id) msg = {...msg, pregnancy_id};
     if (addingtoken instanceof Error) return next(addingtoken);
     if (addingtoken == true) {
@@ -111,7 +111,7 @@ async function refresh(req, res, next) {
   if (find == "expired") {
     const newToken = await getNewRefreshToken(role, refreshtoken, id);
     // msg = {...msg, "refreshtoken": newToken};
-    const pregnancy_id = await getCurrentPregnancy(id);
+    const pregnancy_id = await getCurrentPregnancy(id) || "jello";
     if(pregnancy_id) msg = {...msg, "pregnancyid": pregnancy_id};
     res.cookie("refreshtoken", newToken, {
       httpOnly: true,
