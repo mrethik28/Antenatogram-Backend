@@ -1,8 +1,11 @@
 import { Router } from "express";
-import { measurementRouter } from "./measurementRouter.js";
-import { appointmentRouter } from "./appointmentsRouter.js";
+import { measurementsRouter } from "./measurements/measurementsRouter.js";
+import { appointmentRouter } from "./apointments/appointmentsRouter.js";
+import {pregnancyServices} from "./pregnancyServices.js";
 
 export const pregnancyRouter = Router();
 
-pregnancyRouter.use('/records', measurementRouter);
+pregnancyRouter.post('/currentPregnancy', pregnancyServices.getLivePregnancy);
+pregnancyRouter.post('/addPregnancy', pregnancyServices.addPregnancy);
+pregnancyRouter.use('/records', measurementsRouter);
 pregnancyRouter.use('/appointments',appointmentRouter );
