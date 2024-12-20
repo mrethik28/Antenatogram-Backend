@@ -15,3 +15,12 @@ export class DBError extends Error{
         this.err = error;
     }   
 }
+
+export class LogicError extends Error{
+    err;
+    constructor(message='', error=''){
+        super(message);
+        this.name = AuthenticationError;
+        this.err = error;
+    }
+}

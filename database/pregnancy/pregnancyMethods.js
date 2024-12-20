@@ -1,4 +1,4 @@
-import { DBError } from "../../src/utils/backendError.js";
+import { DBError } from "../../src/utils/Errors.js";
 import { pool } from "../db.js";
 
 export async function getCurrentPregnancy(patientID) {

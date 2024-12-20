@@ -1,5 +1,5 @@
 import { pool } from "../db.js";
-import { AuthenticationError, DBError } from "../../src/utils/backendError.js";
+import { AuthenticationError, DBError } from "../../src/utils/Errors.js";
 import { generateRefreshToken } from "../../src/utils/jwtUtils.js";
 
 export async function addNewRefreshToken(token, role, id) {

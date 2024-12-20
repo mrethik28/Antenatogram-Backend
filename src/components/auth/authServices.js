@@ -1,4 +1,4 @@
-import { AuthenticationError } from "../../utils/backendError.js";
+import { AuthenticationError } from "../../utils/Errors.js";
 import { userExists } from "../../../database/services/userExists.js";
 import { addUser } from "../../../database/services/addUser.js";
 import bcrypt from "bcrypt";
@@ -54,7 +54,7 @@ async function signin(req, res, next) {
       role,
       userexists[id]
     );
-    const pregnancy_id = await getCurrentPregnancy(id) || "jello";
+    const pregnancy_id = await getCurrentPregnancy(userexists.patient_id);
     if(pregnancy_id) msg = {...msg, pregnancy_id};
     if (addingtoken instanceof Error) return next(addingtoken);
     if (addingtoken == true) {

@@ -1,5 +1,5 @@
 import jsonwebtoken from "jsonwebtoken";
-import { AuthenticationError, DBError } from "./backendError.js";
+import { AuthenticationError, DBError } from "./Errors.js";
 import { pool } from "../../database/db.js";
 
 export async function generateAccessToken(role, id) {

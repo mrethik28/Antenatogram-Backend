@@ -1,4 +1,4 @@
-import { AuthenticationError, DBError } from "../../src/utils/backendError.js";
+import { AuthenticationError, DBError } from "../../src/utils/Errors.js";
 import {pool} from "../db.js"
 export async function addUser(userRole, email, passwordhash) {
     const role = userRole.toLowerCase();
