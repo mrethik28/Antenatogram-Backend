@@ -2,14 +2,16 @@ import {
     findEntry,
     addEntry,
     removeEntry,
-    updateEntry
+    updateEntry,
+    fetchEntries
 } from "../../../../database/pregnancy/sub/measurementMethods.js";
 import {DBError, LogicError} from "../../../utils/Errors.js";
 
 async function add(req, res, next){
     const data = req.body.data;
     const type = req.body.type;
-    const adding = await addEntry(type, data);
+    const pregnancyID = req.body.pregnancyID;
+    const adding = await addEntry({type, pregnancyID, data});
     if(adding instanceof Error) return next(adding);
     return res.send({ message: "measurements added" });
 }
@@ -63,6 +65,16 @@ async function remove(req, res, next){
     }
 }
 async function fetch(req, res, next){
-
+    let type = req.query.type;
+    let pregnancyID = req.query.pregnancyID;
+    try {
+        const fetching = await fetchEntries({type, pregnancyID});
+        if(fetching instanceof Error) return next(fetching);
+        return res.json({"data" : fetching});
+    }catch (e) {
+        console.log(e);
+        return next(new DBError("could not fetch entries"));
+    }
 }
+
 export const measurementServices = { add, update, remove, fetch };

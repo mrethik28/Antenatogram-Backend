@@ -57,7 +57,11 @@ export async function addEntry(addmeasurementsDTO){
 
             const [results] = await connection.query(query, valuearray);
             console.log(results);
-            return results.affectedRows > 0;
+            if(results.affectedRows === entries.length){
+                await connection.commit();
+                return true;
+            }
+            throw Error("rollback");
 
         }
         catch(error){
@@ -87,14 +91,16 @@ export async function updateEntry(updatemeasurementsDTO) {
                     results = await connection.query(query, [updatemeasurementsDTO.data[i].value, updatemeasurementsDTO.data[i].value2, updatemeasurementsDTO.data[i].measurementID]);
                     if (results.affectedRows !== 1) throw new DBError("update failure, rolling back transaction");
                 }
+                await connection.commit();
                 return results;
             }
             else {
                 let query = "UPDATE measurement SET value = (?) WHERE measurement_id = UUID_TO_BIN(?)";
                 for (let i = 0; i < updatemeasurementsDTO.data.length; i++) {
                     results = await connection.query(query, [updatemeasurementsDTO.data[i].value, updatemeasurementsDTO.data[i].measurementID]);
-                    if (results.affectedRows !== 1) throw new DBError("update failure, rolling back transaction");
+                    if (results[0].affectedRows !== 1) return new DBError("update failure, rolling back transaction");
                 }
+                await connection.commit();
                 return results;
             }
         }
@@ -113,18 +119,18 @@ export async function updateEntry(updatemeasurementsDTO) {
 
 }
 
-export async function removeEntry(measurementIDs){
+export async function removeEntry(deletemeasurementsDTO){
     let connection;
     try{
         connection = await pool.getConnection();
         await connection.beginTransaction()
         try{
             let query = "DELETE FROM measurement WHERE measurement_id = UUID_TO_BIN(?)";
-            for(let i=0; i<measurementIDs.length; i++){
-                const results = await connection.query(query, measurementIDs[i]);
-                if (results.length !== 1) throw new DBError("could not delete, rolling back");
+            for(let i=0; i<deletemeasurementsDTO.length; i++){
+                const results = await connection.query(query, deletemeasurementsDTO[i].measurementID);
+                if (results[0].affectedRows !== 1) return new DBError("could not delete, rolling back");
             }
-
+            await connection.commit();
         }
         catch(error){
             console.log(error);
@@ -138,4 +144,31 @@ export async function removeEntry(measurementIDs){
     finally{
         connection.release();
     }
+}
+
+export async function fetchEntries(fetchmeasurementDTO){
+    const pregnancyID = fetchmeasurementDTO.pregnancyID;
+    const type = fetchmeasurementDTO.type;
+
+    let connection;
+    try{
+        connection = await pool.getConnection();
+        try{
+            let query = "SELECT type,date,value,value2, BIN_TO_UUID(measurement_id) AS measurementID, BIN_TO_UUID(pregnancy_id) AS pregnancyID  FROM measurement WHERE pregnancy_id = UUID_TO_BIN(?) AND type=(?)";
+            const [results] = await connection.query(query, [pregnancyID, type]);
+            return results;
+        }
+        catch(error){
+            console.log(error);
+            return new DBError(`could not fetch entries `, error);
+        }
+    }
+    catch(error){
+        return new DBError("Could not connect to DB", error);
+    }
+    finally{
+        connection.release();
+    }
+
+
 }
